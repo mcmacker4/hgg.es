@@ -1,0 +1,51 @@
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+#background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    background-color: black;
+
+    z-index: -9000;
+}
+
+html, body, #content {
+    height: 100%;
+}
+
+#content {
+
+    height: 100%;
+    text-align: center;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    color: white;
+    font-family: Tahoma, Geneva, sans-serif;
+
+    user-select: none;
+
+    .main {
+
+        .title {
+            font-size: 28pt;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+        }
+
+        .subtitle {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18pt;
+        }
+
+    }
+
+}
