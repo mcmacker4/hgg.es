@@ -1,31 +1,41 @@
 import { Scene } from './scene'
 
-export type WebGLContext = WebGL2RenderingContext
+export type GLContext = WebGL2RenderingContext
+
+
+export interface Lifecycle {
+    onInit(gl: GLContext): void
+    onUpdate(delta: number): void
+    onRender(gl: GLContext): void
+}
+
 
 export class Engine {
 
     private canvas: HTMLCanvasElement
-    private gl: WebGLContext
-
-    private running: boolean
+    private gl: GLContext
 
     private scene: Scene
+    private lastUpdate: number = Date.now()
 
-    constructor(scene: Scene) {
-        this.canvas = document.getElementById('background') as HTMLCanvasElement
+    constructor(canvasId: string) {
+        this.canvas = document.getElementById(canvasId) as HTMLCanvasElement
         this.gl = this.canvas.getContext('webgl2')
-
-        this.scene = scene
 
         if (!this.gl) throw new Error("Could not create WebGL2 Rendering Context")
 
         window.addEventListener('resize', () => this.onCanvasRezie())
     }
 
+    setScene(scene: Scene) {
+        this.scene = scene
+    }
+
     // Lifecycle Methods
 
     start() {
-        this.running = true
+        if (!this.scene)
+            throw new Error("No scene set.")
         this.initialize()
         this.nextFrame()
     }
@@ -33,22 +43,22 @@ export class Engine {
     private initialize() {
         this.gl.clearColor(0, 0, 0, 0)
         this.gl.enable(this.gl.DEPTH_TEST)
-        // this.gl.enable(this.gl.CULL_FACE)
 
         this.scene.onInit(this.gl)
         this.onCanvasRezie()
     }
 
     private nextFrame() {
-        if (this.running) {
-            this.update()
-            this.render()
-            requestAnimationFrame(() => this.nextFrame())
-        }
+        this.update()
+        this.render()
+        requestAnimationFrame(() => this.nextFrame())
     }
 
     private update() {
-        this.scene.onUpdate()
+        const now = Date.now()
+        const delta = now - this.lastUpdate
+        this.scene.onUpdate(delta / 1000)
+        this.lastUpdate = now
     }
 
     private render() {

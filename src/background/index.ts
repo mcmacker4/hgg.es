@@ -1,8 +1,8 @@
 import { Engine } from './engine'
-import { BackgroundScene } from './scene'
+import { WaveScene } from './scene/wave'
 
-const scene = new BackgroundScene()
 
-const engine = new Engine(scene)
+const engine = new Engine('background')
 
+engine.setScene(new WaveScene())
 engine.start()

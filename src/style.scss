@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;500&display=swap');
+
 * {
     padding: 0;
     margin: 0;
@@ -25,25 +27,28 @@ html, body, #content {
     text-align: center;
     
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    // flex-direction: column;
+    // justify-content: center;
 
     color: white;
-    font-family: Tahoma, Geneva, sans-serif;
+    font-family: 'Roboto', sans-serif;
 
     user-select: none;
 
     .main {
 
+        margin: 40vh auto auto;
+
         .title {
             font-size: 28pt;
-            font-weight: bold;
-            letter-spacing: 0.1em;
+            font-weight: 500;
+            letter-spacing: 0.07em;
         }
 
         .subtitle {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 18pt;
+            // font-family: 'Source Code Pro', monospace;
+            font-size: 14pt;
+            font-weight: 300;
         }
 
     }
