@@ -5,7 +5,7 @@ export type WebGLContext = WebGL2RenderingContext
 export class Engine {
 
     private canvas: HTMLCanvasElement
-    private ctx: WebGLContext
+    private gl: WebGLContext
 
     private running: boolean
 
@@ -13,11 +13,11 @@ export class Engine {
 
     constructor(scene: Scene) {
         this.canvas = document.getElementById('background') as HTMLCanvasElement
-        this.ctx = this.canvas.getContext('webgl2')
+        this.gl = this.canvas.getContext('webgl2')
 
         this.scene = scene
 
-        if (!this.ctx) throw new Error("Could not create WebGL2 Rendering Context")
+        if (!this.gl) throw new Error("Could not create WebGL2 Rendering Context")
 
         window.addEventListener('resize', () => this.onCanvasRezie())
     }
@@ -31,8 +31,11 @@ export class Engine {
     }
 
     private initialize() {
-        this.ctx.clearColor(0, 0, 0, 0)
-        this.scene.onInit(this.ctx)
+        this.gl.clearColor(0, 0, 0, 0)
+        this.gl.enable(this.gl.DEPTH_TEST)
+        // this.gl.enable(this.gl.CULL_FACE)
+
+        this.scene.onInit(this.gl)
         this.onCanvasRezie()
     }
 
@@ -49,8 +52,8 @@ export class Engine {
     }
 
     private render() {
-        this.ctx.clear(this.ctx.COLOR_BUFFER_BIT | this.ctx.DEPTH_BUFFER_BIT)
-        this.scene.onRender(this.ctx)
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
+        this.scene.onRender(this.gl)
     }
 
     // Event Methods
@@ -59,7 +62,7 @@ export class Engine {
         const { innerWidth: width, innerHeight: height } = window
         this.canvas.width = width
         this.canvas.height = height
-        this.ctx.viewport(0, 0, width, height)
+        this.gl.viewport(0, 0, width, height)
         this.scene.onResize(width, height)
     }
 

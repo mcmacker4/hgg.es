@@ -1,7 +1,7 @@
 {
-  "name": "ts-preact-redux-bootstrap",
+  "name": "hgg.es",
   "version": "1.0.0",
-  "description": "[[[Your Project Description Here]]]",
+  "description": "My Portfolio",
   "main": "src/main.js",
   "author": "mcmacker4",
   "scripts": {
@@ -28,8 +28,7 @@
     "webpack-merge": "^5.0.8"
   },
   "dependencies": {
-    "gl-matrix": "^3.3.0",
-    "preact": "^10.4.1"
+    "gl-matrix": "^3.3.0"
   },
   "browserslist": "defaults"
 }

@@ -1,8 +1,6 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "jsx": "react",
-        "jsxFactory": "h",
         "sourceMap": true,
         "target": "ES2017",
         "lib": ["ES2017", "DOM"],
