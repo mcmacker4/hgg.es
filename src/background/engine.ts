@@ -11,6 +11,8 @@ export class Engine {
 
     private scene: Scene
 
+    private lastUpdate: number = Date.now()
+
     constructor(scene: Scene) {
         this.canvas = document.getElementById('background') as HTMLCanvasElement
         this.gl = this.canvas.getContext('webgl2')
@@ -48,7 +50,10 @@ export class Engine {
     }
 
     private update() {
-        this.scene.onUpdate()
+        const now = Date.now()
+        const delta = (now - this.lastUpdate) / 1000
+        this.scene.onUpdate(delta)
+        this.lastUpdate = now
     }
 
     private render() {

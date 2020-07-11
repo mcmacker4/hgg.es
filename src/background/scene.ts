@@ -7,7 +7,7 @@ import fragmentShaderSrc from './shaders/main.f.glsl'
 export abstract class Scene {
 
     abstract onInit(gl: WebGLContext): void
-    abstract onUpdate(): void
+    abstract onUpdate(delta: number): void
     abstract onRender(gl: WebGLContext): void
 
     onResize(width: number, height: number) {}
@@ -230,7 +230,7 @@ class Entity {
         this.scale = vec3.fromValues(1, 1, 1)
     }
 
-    onUpdate() {
+    onUpdate(_: number) {
         mat4.fromRotationTranslationScale(this.matrix, this.rotation, this.position, this.scale)
     }
 
@@ -243,15 +243,18 @@ class Entity {
 class Cube extends Entity {
 
     readonly speed: vec3
+    private posDelta: vec3
 
     constructor(model: VAO, speed: vec3) {
         super(model)
-        this.speed = vec3.scale(vec3.create(), speed, 0.1)
+        this.speed = speed
+        this.posDelta = vec3.create()
     }
 
-    onUpdate() {
-        vec3.add(this.position, this.position, this.speed)
-        super.onUpdate()
+    onUpdate(delta: number) {
+        vec3.scale(this.posDelta, this.speed, delta)
+        vec3.add(this.position, this.position, this.posDelta)
+        super.onUpdate(delta)
     }
 
 }
@@ -301,7 +304,12 @@ export class BackgroundScene extends Scene {
 
     private projectionMatrix: mat4
 
-    private lastCubeTime: number = Date.now()
+    private cubeDelta: number = 0
+    
+    private softCubeLimit = 100
+    private cubeSpeed: number = 0.5
+    private totalDistance: number = 20
+    private cubeRate: number = this.totalDistance / (this.cubeSpeed * this.softCubeLimit)
 
     onInit(gl: WebGLContext): void {
         this.program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc)
@@ -309,15 +317,15 @@ export class BackgroundScene extends Scene {
         this.projectionMatrix = mat4.create()
 
         this.cubeModel = new VAO(gl, cubeVertices, cubeNormals)
-        this.cubes = [...Array(60)].map((_, i) => {
-            const cube = new Cube(this.cubeModel, vec3.fromValues(Math.random() < 0.5 ? -0.2 : 0.2, 0, 0))
-            cube.position = vec3.fromValues(Math.random() * 20 - 10, Math.random() * 3 - 1.5, Math.random() * 3 - 5)
+        this.cubes = [...Array(this.softCubeLimit)].map((_, i) => {
+            const cube = new Cube(this.cubeModel, vec3.fromValues(Math.random() < 0.5 ? -this.cubeSpeed : this.cubeSpeed, 0, 0))
+            cube.position = vec3.fromValues((Math.random() - 0.5) * this.totalDistance, (Math.random() - 0.5) * 3, Math.random() * 3 - 5)
             cube.scale = vec3.fromValues(0.1, 0.1,  0.1)
             cube.rotation = quat.fromEuler(cube.rotation, Math.random() * 180, Math.random() * 180, Math.random() * 180)
             return cube
         })
 
-        const lights = [
+        const lights: Light[] = [
             {
                 position: vec3.fromValues(-4, -4, 0),
                 color: vec3.fromValues(20, 10, 10)
@@ -341,35 +349,33 @@ export class BackgroundScene extends Scene {
 
     }
 
-    onUpdate(): void {
-        const now = Date.now()
-
-        if (now > this.lastCubeTime + 200) {
+    onUpdate(delta: number): void {
+        this.cubeDelta += delta;
+        if (this.cubeDelta > this.cubeRate) {
             let cube: Cube
             if (Math.random() < 0.5) {
                 // From the left, positive speed
-                const speed = vec3.fromValues(0.2, 0, 0)
+                const speed = vec3.fromValues(this.cubeSpeed, 0, 0)
                 cube = new Cube(this.cubeModel, speed)
-                cube.position = vec3.fromValues(-10, Math.random() * 3 - 1.5, Math.random() * 3 - 5)
+                cube.position = vec3.fromValues(-10, (Math.random() - 0.5) * 3, Math.random() * 3 - 5)
                 cube.scale = vec3.fromValues(0.1, 0.1,  0.1)
                 cube.rotation = quat.fromEuler(cube.rotation, Math.random() * 180, Math.random() * 180, Math.random() * 180)
             } else {
-                const speed = vec3.fromValues(-0.2, 0, 0)
+                const speed = vec3.fromValues(-this.cubeSpeed, 0, 0)
                 cube = new Cube(this.cubeModel, speed)
-                cube.position = vec3.fromValues(10, Math.random() * 3 - 1.5, Math.random() * 3 - 5)
+                cube.position = vec3.fromValues(10, (Math.random() - 0.5) * 3, Math.random() * 3 - 5)
                 cube.scale = vec3.fromValues(0.1, 0.1,  0.1)
                 cube.rotation = quat.fromEuler(cube.rotation, Math.random() * 180, Math.random() * 180, Math.random() * 180)
             }
 
-            this.cubes = this.cubes.filter(cube => (cube.speed[0] > 0 && cube.position[0] < 10) || (cube.speed[0] < 0 && cube.position[0] > -10))
+            this.cubes = this.cubes.filter(cube => (cube.speed[0] > 0 && cube.position[0] < this.totalDistance / 2) || (cube.speed[0] < 0 && cube.position[0] > -(this.totalDistance / 2)))
 
             this.cubes.push(cube)
-            this.lastCubeTime = now
+            this.cubeDelta = this.cubeDelta % this.cubeRate
 
-            console.log(this.cubes.length)
         }
 
-        this.cubes.forEach(cube => cube.onUpdate())
+        this.cubes.forEach(cube => cube.onUpdate(delta))
     }
 
     onRender(gl: WebGLContext): void {
