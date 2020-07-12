@@ -1,8 +1,8 @@
 import { WebGLContext, Engine } from "./engine";
 import { vec3, quat, mat4 } from 'gl-matrix'
 
-import vertexShaderSrc from './shaders/main.v.glsl'
-import fragmentShaderSrc from './shaders/main.f.glsl'
+import vertexShaderSrc from './shaders/main.vert'
+import fragmentShaderSrc from './shaders/main.frag'
 
 export abstract class Scene {
 

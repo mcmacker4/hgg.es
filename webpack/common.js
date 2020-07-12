@@ -27,7 +27,7 @@ module.exports = {
                 loader: 'style-loader!css-loader!sass-loader'
             },
             {
-                test: /\.glsl$/,
+                test: /\.(glsl|vert|frag)$/,
                 loader: 'raw-loader'
             }
         ]

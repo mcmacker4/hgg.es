@@ -11,6 +11,8 @@ uniform vec3 lightColors[20];
 
 uniform int lightCount;
 
+const vec3 ambient = vec3(0.1);
+
 void main() {
 
     vec3 normal = normalize(_normal);
@@ -31,5 +33,5 @@ void main() {
 
     }
 
-    fragColor = vec4(result, 1.0);
+    fragColor = vec4(max(result, ambient), 1.0);
 }
