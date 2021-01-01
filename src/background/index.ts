@@ -1,4 +1,4 @@
-import { Engine } from './engine'
+import { Engine } from '../engine'
 import { BackgroundScene } from './scene'
 
 const scene = new BackgroundScene()

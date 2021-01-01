@@ -1,19 +1,10 @@
-import { WebGLContext, Engine } from "./engine";
+import { WebGLContext } from "../engine";
 import { vec3, quat, mat4 } from 'gl-matrix'
 
 import vertexShaderSrc from './shaders/main.vert'
 import fragmentShaderSrc from './shaders/main.frag'
-
-export abstract class Scene {
-
-    abstract onInit(gl: WebGLContext): void
-    abstract onUpdate(delta: number): void
-    abstract onRender(gl: WebGLContext): void
-
-    onResize(width: number, height: number) {}
-
-}
-
+import {createProgram, VAO} from "../engine/gl";
+import {Scene} from "../engine/scene";
 
 
 /*
@@ -62,22 +53,22 @@ export abstract class Scene {
 const cubeVertices = Float32Array.from([
     -1,  1,  1, // 0
     -1, -1,  1, // 1
-    1, -1,  1, // 2
+     1, -1,  1, // 2
     -1,  1,  1, // 0
-    1, -1,  1, // 2
-    1,  1,  1, // 3
+     1, -1,  1, // 2
+     1,  1,  1, // 3
 
-    1,  1,  1, // 3
-    1, -1,  1, // 2
-    1, -1, -1, // 6
-    1,  1,  1, // 3
-    1, -1, -1, // 6
-    1,  1, -1, // 7
+     1,  1,  1, // 3
+     1, -1,  1, // 2
+     1, -1, -1, // 6
+     1,  1,  1, // 3
+     1, -1, -1, // 6
+     1,  1, -1, // 7
 
-    1,  1, -1, // 7
-    1, -1, -1, // 6
+     1,  1, -1, // 7
+     1, -1, -1, // 6
     -1, -1, -1, // 5
-    1,  1, -1, // 7
+     1,  1, -1, // 7
     -1, -1, -1, // 5
     -1,  1, -1, // 4
 
@@ -90,17 +81,17 @@ const cubeVertices = Float32Array.from([
 
     -1,  1, -1, // 4
     -1,  1,  1, // 0
-    1,  1,  1, // 3
+     1,  1,  1, // 3
     -1,  1, -1, // 4
-    1,  1,  1, // 3
-    1,  1, -1, // 7
+     1,  1,  1, // 3
+     1,  1, -1, // 7
 
     -1, -1,  1, // 1
     -1, -1, -1, // 5
-    1, -1, -1, // 6
+     1, -1, -1, // 6
     -1, -1,  1, // 1
-    1, -1, -1, // 6
-    1, -1,  1, // 2
+     1, -1, -1, // 6
+     1, -1,  1, // 2
 ])
 
 const cubeNormals = Float32Array.from([
@@ -148,70 +139,6 @@ const cubeNormals = Float32Array.from([
     0, -1, 0,
 ])
 
-class VBO {
-
-    private id: WebGLBuffer
-
-    constructor(gl: WebGLContext, target: number, data: Float32Array | Int32Array) {
-        this.id = gl.createBuffer()
-
-        this.bind(gl, target)
-        gl.bufferData(target, data, gl.STATIC_DRAW)
-        this.unbind(gl, target)
-    }
-
-    bind(gl: WebGLContext, target: number) {
-        gl.bindBuffer(target, this.id)
-    }
-
-    unbind(gl: WebGLContext, target: number) {
-        gl.bindBuffer(target, null)
-    }
-
-}
-
-class VAO {
-
-    private id: WebGLVertexArrayObject
-    readonly vertexCount: number
-
-    constructor(gl: WebGLContext, vertices: Float32Array, normals: Float32Array) {
-        this.id = gl.createVertexArray()
-
-        this.bind(gl)
-
-        // this.addIndices(gl, indices)
-        this.addAttribute(gl, vertices, 0, 3, gl.FLOAT)
-        this.addAttribute(gl, normals, 1, 3, gl.FLOAT)
-
-        // this.vertexCount = indices.length
-        this.vertexCount = Math.floor(vertices.length / 3)
-
-        this.unbind(gl)
-    }
-
-    private addIndices(gl: WebGLContext, indices: Int32Array) {
-        const vbo = new VBO(gl, gl.ELEMENT_ARRAY_BUFFER, indices)
-        vbo.bind(gl, gl.ELEMENT_ARRAY_BUFFER)
-    }
-
-    private addAttribute(gl: WebGLContext, data: Float32Array, index: number, size: number, type: number, normalized: boolean = false, stride: number = 0, offset: number = 0) {
-        const vbo = new VBO(gl, gl.ARRAY_BUFFER, data)
-        vbo.bind(gl, gl.ARRAY_BUFFER)
-        gl.vertexAttribPointer(index, size, type, normalized, stride, offset)
-        gl.enableVertexAttribArray(index)
-        vbo.unbind(gl, gl.ARRAY_BUFFER)
-    }
-
-    bind(gl: WebGLContext) {
-        gl.bindVertexArray(this.id)
-    }
-
-    unbind(gl: WebGLContext) {
-        gl.bindVertexArray(null)
-    }
-
-}
 
 class Entity {
 
@@ -259,37 +186,6 @@ class Cube extends Entity {
 
 }
 
-function createShader(gl: WebGLContext, type: number, src: string): WebGLShader {
-    const shader = gl.createShader(type)
-    gl.shaderSource(shader, src)
-
-    gl.compileShader(shader)
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-        throw new Error(`Shader Compilation Error (${type == gl.VERTEX_SHADER ? 'vertex' : 'fragment'}).\n` + gl.getShaderInfoLog(shader))
-
-    return shader
-}
-
-function createProgram(gl: WebGLContext, vsrc: string, fsrc: string): WebGLProgram {
-    const program = gl.createProgram()
-
-    const vshader = createShader(gl, gl.VERTEX_SHADER, vsrc)
-    const fshader = createShader(gl, gl.FRAGMENT_SHADER, fsrc)
-
-    gl.attachShader(program, vshader)
-    gl.attachShader(program, fshader)
-
-    gl.linkProgram(program)
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS))
-        throw new Error('Error linking program.\n' + gl.getProgramInfoLog(program))
-
-    gl.validateProgram(program)
-    if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS))
-        throw new Error('Error validating program.\n' + gl.getProgramInfoLog(program))
-
-    return program
-}
-
 interface Light {
     position: vec3
     color: vec3
@@ -297,12 +193,12 @@ interface Light {
 
 export class BackgroundScene extends Scene {
 
-    private program: WebGLShader
+    private program: WebGLShader | undefined
 
-    private cubeModel: VAO
-    private cubes: Cube[]
+    private cubeModel: VAO | undefined
+    private cubes: Cube[] | undefined
 
-    private projectionMatrix: mat4
+    private projectionMatrix: mat4 | undefined
 
     private cubeDelta: number = 0
     
@@ -317,8 +213,8 @@ export class BackgroundScene extends Scene {
         this.projectionMatrix = mat4.create()
 
         this.cubeModel = new VAO(gl, cubeVertices, cubeNormals)
-        this.cubes = [...Array(this.softCubeLimit)].map((_, i) => {
-            const cube = new Cube(this.cubeModel, vec3.fromValues(Math.random() < 0.5 ? -this.cubeSpeed : this.cubeSpeed, 0, 0))
+        this.cubes = [...Array(this.softCubeLimit)].map(() => {
+            const cube = new Cube(this.cubeModel!, vec3.fromValues(Math.random() < 0.5 ? -this.cubeSpeed : this.cubeSpeed, 0, 0))
             cube.position = vec3.fromValues((Math.random() - 0.5) * this.totalDistance, (Math.random() - 0.5) * 3, Math.random() * 3 - 5)
             cube.scale = vec3.fromValues(0.1, 0.1,  0.1)
             cube.rotation = quat.fromEuler(cube.rotation, Math.random() * 180, Math.random() * 180, Math.random() * 180)
@@ -340,8 +236,8 @@ export class BackgroundScene extends Scene {
         const countLoc = gl.getUniformLocation(this.program, 'lightCount')
         gl.uniform1i(countLoc, lights.length)
         lights.forEach((light, i) => {
-            const posLoc = gl.getUniformLocation(this.program, `lightPositions[${i}]`)
-            const colorLoc = gl.getUniformLocation(this.program, `lightColors[${i}]`)
+            const posLoc = gl.getUniformLocation(this.program!, `lightPositions[${i}]`)
+            const colorLoc = gl.getUniformLocation(this.program!, `lightColors[${i}]`)
             gl.uniform3fv(posLoc, light.position)
             gl.uniform3fv(colorLoc, light.color)
         })
@@ -356,40 +252,40 @@ export class BackgroundScene extends Scene {
             if (Math.random() < 0.5) {
                 // From the left, positive speed
                 const speed = vec3.fromValues(this.cubeSpeed, 0, 0)
-                cube = new Cube(this.cubeModel, speed)
+                cube = new Cube(this.cubeModel!, speed)
                 cube.position = vec3.fromValues(-10, (Math.random() - 0.5) * 3, Math.random() * 3 - 5)
                 cube.scale = vec3.fromValues(0.1, 0.1,  0.1)
                 cube.rotation = quat.fromEuler(cube.rotation, Math.random() * 180, Math.random() * 180, Math.random() * 180)
             } else {
                 const speed = vec3.fromValues(-this.cubeSpeed, 0, 0)
-                cube = new Cube(this.cubeModel, speed)
+                cube = new Cube(this.cubeModel!, speed)
                 cube.position = vec3.fromValues(10, (Math.random() - 0.5) * 3, Math.random() * 3 - 5)
                 cube.scale = vec3.fromValues(0.1, 0.1,  0.1)
                 cube.rotation = quat.fromEuler(cube.rotation, Math.random() * 180, Math.random() * 180, Math.random() * 180)
             }
 
-            this.cubes = this.cubes.filter(cube => (cube.speed[0] > 0 && cube.position[0] < this.totalDistance / 2) || (cube.speed[0] < 0 && cube.position[0] > -(this.totalDistance / 2)))
+            this.cubes = this.cubes!.filter(cube => (cube.speed[0] > 0 && cube.position[0] < this.totalDistance / 2) || (cube.speed[0] < 0 && cube.position[0] > -(this.totalDistance / 2)))
 
             this.cubes.push(cube)
             this.cubeDelta = this.cubeDelta % this.cubeRate
 
         }
 
-        this.cubes.forEach(cube => cube.onUpdate(delta))
+        this.cubes!.forEach(cube => cube.onUpdate(delta))
     }
 
     onRender(gl: WebGLContext): void {
 
-        gl.useProgram(this.program)
+        gl.useProgram(this.program!)
 
-        this.cubes.forEach(cube => {
+        this.cubes!.forEach(cube => {
 
             const locations = {
-                projectionMatrix: gl.getUniformLocation(this.program, 'projectionMatrix'),
-                modelMatrix: gl.getUniformLocation(this.program, 'modelMatrix')
+                projectionMatrix: gl.getUniformLocation(this.program!, 'projectionMatrix'),
+                modelMatrix: gl.getUniformLocation(this.program!, 'modelMatrix')
             }
 
-            gl.uniformMatrix4fv(locations.projectionMatrix, false, this.projectionMatrix)
+            gl.uniformMatrix4fv(locations.projectionMatrix, false, this.projectionMatrix!)
             gl.uniformMatrix4fv(locations.modelMatrix, false, cube.modelMatrix)
 
             cube.model.bind(gl)
@@ -404,7 +300,7 @@ export class BackgroundScene extends Scene {
     }
 
     onResize(width: number, height: number) {
-        mat4.perspective(this.projectionMatrix, 50.0 * (Math.PI / 180), width / height, 0.1, 1000)
+        mat4.perspective(this.projectionMatrix!, 50.0 * (Math.PI / 180), width / height, 0.1, 1000)
     }
 
 }

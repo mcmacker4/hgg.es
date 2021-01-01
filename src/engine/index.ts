@@ -7,7 +7,7 @@ export class Engine {
     private canvas: HTMLCanvasElement
     private gl: WebGLContext
 
-    private running: boolean
+    private running: boolean = false
 
     private scene: Scene
 
@@ -15,11 +15,13 @@ export class Engine {
 
     constructor(scene: Scene) {
         this.canvas = document.getElementById('background') as HTMLCanvasElement
-        this.gl = this.canvas.getContext('webgl2')
+
+        const gl = this.canvas.getContext('webgl2')
+        if (gl === null) throw new Error("Could not create WebGL2 Rendering Context.")
+
+        this.gl = gl
 
         this.scene = scene
-
-        if (!this.gl) throw new Error("Could not create WebGL2 Rendering Context")
 
         window.addEventListener('resize', () => this.onCanvasRezie())
     }
@@ -35,7 +37,7 @@ export class Engine {
     private initialize() {
         this.gl.clearColor(0, 0, 0, 0)
         this.gl.enable(this.gl.DEPTH_TEST)
-        // this.gl.enable(this.gl.CULL_FACE)
+        this.gl.enable(this.gl.CULL_FACE)
 
         this.scene.onInit(this.gl)
         this.onCanvasRezie()

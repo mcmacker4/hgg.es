@@ -4,6 +4,7 @@
         "sourceMap": true,
         "target": "ES2017",
         "lib": ["ES2017", "DOM"],
+        "strict": true,
         "typeRoots": [
             "./src/misc/declarations.d.ts"
         ]

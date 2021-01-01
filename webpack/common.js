@@ -11,7 +11,10 @@ module.exports = {
         rules: [
             {
                 test: /\.tsx?$/,
-                loader: 'babel-loader!ts-loader'
+                use: [
+                    'babel-loader',
+                    'ts-loader'
+                ]
             },
             {
                 test: /\.jsx?$/,
@@ -24,7 +27,11 @@ module.exports = {
             },
             {
                 test: /\.s[ac]ss$/,
-                loader: 'style-loader!css-loader!sass-loader'
+                use: [
+                    'style-loader',
+                    'css-loader',
+                    'sass-loader'
+                ]
             },
             {
                 test: /\.(glsl|vert|frag)$/,
