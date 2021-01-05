@@ -1,143 +1,12 @@
-import { WebGLContext } from "../engine";
+import { WebGLContext } from "../../engine";
 import { vec3, quat, mat4 } from 'gl-matrix'
 
 import vertexShaderSrc from './shaders/main.vert'
 import fragmentShaderSrc from './shaders/main.frag'
-import {createProgram, VAO} from "../engine/gl";
-import {Scene} from "../engine/scene";
+import {createProgram, VAO} from "../../engine/gl";
+import {Scene} from "../../engine/scene";
 
-
-/*
-    Index Position of each vertex in the cubeVertices array
-
-    4                     7
-    - - - - - - - - - - - -
-    | \                   | \
-    |   \                 |   \
-    |     \               |     \
-    |       \ 0           |       \ 3
-    |         - - - - - - - - - - - -
-    |         |           |         |
-    |         |           |         |
-    |         |           |         |
-    |         |           |         |
-    - - - - - | - - - - - -         |
-    5 \       |           6 \       |
-        \     |               \     |
-          \   |                 \   |
-            \ |                   \ |
-              - - - - - - - - - - - -
-              1                     2
-*/
-
-// const cubeVertices = Float32Array.from([
-//     -1,  1,  1, // 0
-//     -1, -1,  1, // 1
-//      1, -1,  1, // 2
-//      1,  1,  1, // 3
-//     -1,  1, -1, // 4
-//     -1, -1, -1, // 5
-//      1, -1, -1, // 6
-//      1,  1, -1, // 7
-// ])
-
-// const cubeIndices = Int32Array.from([
-//     0, 1, 2, 0, 2, 3, // Front
-//     3, 2, 6, 3, 6, 7, // Right
-//     7, 6, 5, 7, 5, 4, // Back
-//     4, 5, 1, 4, 1, 0, // Left
-//     4, 0, 3, 4, 3, 7, // Top
-//     1, 5, 6, 1, 6, 2  // Bottom
-// ])
-
-const cubeVertices = Float32Array.from([
-    -1,  1,  1, // 0
-    -1, -1,  1, // 1
-     1, -1,  1, // 2
-    -1,  1,  1, // 0
-     1, -1,  1, // 2
-     1,  1,  1, // 3
-
-     1,  1,  1, // 3
-     1, -1,  1, // 2
-     1, -1, -1, // 6
-     1,  1,  1, // 3
-     1, -1, -1, // 6
-     1,  1, -1, // 7
-
-     1,  1, -1, // 7
-     1, -1, -1, // 6
-    -1, -1, -1, // 5
-     1,  1, -1, // 7
-    -1, -1, -1, // 5
-    -1,  1, -1, // 4
-
-    -1,  1, -1, // 4
-    -1, -1, -1, // 5
-    -1, -1,  1, // 1
-    -1,  1, -1, // 4
-    -1, -1,  1, // 1
-    -1,  1,  1, // 0
-
-    -1,  1, -1, // 4
-    -1,  1,  1, // 0
-     1,  1,  1, // 3
-    -1,  1, -1, // 4
-     1,  1,  1, // 3
-     1,  1, -1, // 7
-
-    -1, -1,  1, // 1
-    -1, -1, -1, // 5
-     1, -1, -1, // 6
-    -1, -1,  1, // 1
-     1, -1, -1, // 6
-     1, -1,  1, // 2
-])
-
-const cubeNormals = Float32Array.from([
-    // Front
-    0, 0, 1,
-    0, 0, 1,
-    0, 0, 1,
-    0, 0, 1,
-    0, 0, 1,
-    0, 0, 1,
-    // Right
-    1, 0, 0,
-    1, 0, 0,
-    1, 0, 0,
-    1, 0, 0,
-    1, 0, 0,
-    1, 0, 0,
-    // Back
-    0, 0, -1,
-    0, 0, -1,
-    0, 0, -1,
-    0, 0, -1,
-    0, 0, -1,
-    0, 0, -1,
-    // Left
-    -1, 0, 0,
-    -1, 0, 0,
-    -1, 0, 0,
-    -1, 0, 0,
-    -1, 0, 0,
-    -1, 0, 0,
-    // Top
-    0, 1, 0,
-    0, 1, 0,
-    0, 1, 0,
-    0, 1, 0,
-    0, 1, 0,
-    0, 1, 0,
-    // Bottom
-    0, -1, 0,
-    0, -1, 0,
-    0, -1, 0,
-    0, -1, 0,
-    0, -1, 0,
-    0, -1, 0,
-])
+import {cubeVertices, cubeNormals} from '../../models/cube'
 
 
 class Entity {
@@ -191,7 +60,7 @@ interface Light {
     color: vec3
 }
 
-export class BackgroundScene extends Scene {
+export class PassingCubes extends Scene {
 
     private program: WebGLShader | undefined
 
@@ -233,14 +102,17 @@ export class BackgroundScene extends Scene {
         ]
 
         gl.useProgram(this.program)
+
         const countLoc = gl.getUniformLocation(this.program, 'lightCount')
         gl.uniform1i(countLoc, lights.length)
+
         lights.forEach((light, i) => {
             const posLoc = gl.getUniformLocation(this.program!, `lightPositions[${i}]`)
-            const colorLoc = gl.getUniformLocation(this.program!, `lightColors[${i}]`)
             gl.uniform3fv(posLoc, light.position)
+            const colorLoc = gl.getUniformLocation(this.program!, `lightColors[${i}]`)
             gl.uniform3fv(colorLoc, light.color)
         })
+
         gl.useProgram(null)
 
     }
