@@ -79,6 +79,7 @@ export class ReactiveCubes extends Scene {
     }
 
     onUpdate(delta: number): void {
+        delta = delta > 0.1 ? 0.1 : delta
         const distance = vec2.sub(vec2.create(), this.targetRotation, this.globalRotation)
         const speed = vec2.scale(vec2.create(), distance, this.normalSpeed)
         vec2.scale(speed, speed, delta)
