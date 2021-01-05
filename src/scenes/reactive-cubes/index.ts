@@ -23,22 +23,23 @@ export class ReactiveCubes extends Scene {
 
     private cubes: Cube[] = []
     private globalRotation: vec2 = vec2.fromValues(0, 0)
+    private targetRotation: vec2 = vec2.fromValues(0, 0)
 
     private canvasSize: vec2 = vec2.fromValues(0, 0)
 
     private readonly space = 10
     private readonly sensitivity = 0.2
+    private readonly normalSpeed = 1.5
 
     onInit(gl: WebGL2RenderingContext): void {
         this.program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc)
         this.cubeModel = new VAO(gl, cubeVertices, cubeNormals)
 
-
         window.addEventListener("mousemove", (event: MouseEvent) => {
-            vec2.set(this.globalRotation, (event.clientY / this.canvasSize[1] - 0.5) * this.sensitivity, (event.clientX / this.canvasSize[0] - 0.5) * this.sensitivity)
+            vec2.set(this.targetRotation, (event.clientY / this.canvasSize[1] - 0.5) * this.sensitivity, (event.clientX / this.canvasSize[0] - 0.5) * this.sensitivity)
         })
 
-        this.cubes = [...Array(200)].map(() => {
+        this.cubes = [...Array(400)].map(() => {
             return {
                 position: vec3.fromValues(rand(-this.space, this.space), rand(-this.space, this.space), rand(-10, 0)),
                 rotation: quat.random(quat.create()),
@@ -77,7 +78,12 @@ export class ReactiveCubes extends Scene {
 
     }
 
-    onUpdate(_: number): void {}
+    onUpdate(delta: number): void {
+        const distance = vec2.sub(vec2.create(), this.targetRotation, this.globalRotation)
+        const speed = vec2.scale(vec2.create(), distance, this.normalSpeed)
+        vec2.scale(speed, speed, delta)
+        vec2.add(this.globalRotation, this.globalRotation, speed)
+    }
 
     onRender(gl: WebGL2RenderingContext): void {
         gl.useProgram(this.program!)
