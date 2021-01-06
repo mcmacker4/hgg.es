@@ -11,8 +11,8 @@ export class Engine {
 
     private scene: Scene
 
-    private lastUpdate: number = Date.now()
-    private lastFps: number = Date.now()
+    private lastUpdate: number = performance.now()
+    private lastFps: number = performance.now()
     private frameCount: number = 0
 
     constructor(scene: Scene) {
@@ -54,7 +54,7 @@ export class Engine {
     }
 
     private update() {
-        const now = Date.now()
+        const now = performance.now()
         const delta = (now - this.lastUpdate) / 1000
         this.scene.onUpdate(delta)
         this.lastUpdate = now

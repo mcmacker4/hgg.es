@@ -33,9 +33,10 @@ export class ReactiveCubes extends Scene {
 
     private canvasSize: vec2 = vec2.fromValues(0, 0)
 
-    private readonly cubeCount = 300
+    private readonly cubeCount = 400
     private readonly space = 8
-    private readonly sensitivity = 0.5
+    private readonly depth = 10
+    private readonly sensitivity = 0.2
     private readonly normalSpeed = 2.5
 
     private readonly cubeScale = 0.3
@@ -50,7 +51,7 @@ export class ReactiveCubes extends Scene {
         const aspect = this.canvasSize[0] / this.canvasSize[1]
 
         this.cubes = [...Array(this.cubeCount)].map(() => {
-            const position = vec3.fromValues(rand(-this.space, this.space), rand(-this.space, this.space), rand(-10, 0))
+            const position = vec3.fromValues(rand(-this.space, this.space), rand(-this.space, this.space), rand(-this.depth, 0))
             const rotation = quat.random(quat.create())
             const scale = vec3.fromValues(this.cubeScale, this.cubeScale, this.cubeScale)
             return {
