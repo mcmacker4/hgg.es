@@ -30,18 +30,17 @@ export class Engine {
 
     // Lifecycle Methods
 
-    start() {
+    async start() {
         this.running = true
         this.initialize()
         this.nextFrame()
     }
 
-    private initialize() {
+    private async initialize() {
         this.gl.clearColor(0, 0, 0, 0)
         this.gl.enable(this.gl.DEPTH_TEST)
         this.gl.enable(this.gl.CULL_FACE)
-
-        this.scene.onInit(this.gl)
+        await this.scene.onInit(this.gl)
         this.onCanvasRezie()
     }
 

@@ -76,7 +76,7 @@ export class PassingCubes extends Scene {
     private totalDistance: number = 20
     private cubeRate: number = this.totalDistance / (this.cubeSpeed * this.softCubeLimit)
 
-    onInit(gl: WebGLContext): void {
+    async onInit(gl: WebGLContext) {
         this.program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc)
 
         this.projectionMatrix = mat4.create()

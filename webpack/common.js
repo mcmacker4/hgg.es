@@ -5,20 +5,15 @@ module.exports = {
     entry: './src/main.ts',
     output: {
         path: path.resolve(__dirname, '../dist'),
-        filename: "[contenthash].js"
+        filename: "[name].[contenthash].js"
     },
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
                 use: [
-                    'babel-loader',
                     'ts-loader'
                 ]
-            },
-            {
-                test: /\.jsx?$/,
-                loader: 'babel-loader'
             },
             {
                 enforce: 'pre',

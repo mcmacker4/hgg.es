@@ -33,7 +33,7 @@ export class ReactiveCubes extends Scene {
 
     private canvasSize: vec2 = vec2.fromValues(0, 0)
 
-    private readonly cubeCount = 400
+    private readonly cubeCount = 10000
     private readonly space = 8
     private readonly depth = 10
     private readonly sensitivity = 0.2
@@ -41,7 +41,7 @@ export class ReactiveCubes extends Scene {
 
     private readonly cubeScale = 0.3
 
-    onInit(gl: WebGLContext): void {
+    async onInit(gl: WebGLContext) {
         this.program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc)
 
         window.addEventListener("mousemove", (event: MouseEvent) => {

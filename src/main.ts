@@ -1,10 +1,10 @@
-import "./style.scss"
+import './style.scss'
 
-import { Engine } from './engine'
-import { ReactiveCubes } from './scenes/reactive-cubes'
+import {Engine} from './engine'
+import {ReactiveCubes} from './scenes/reactive-cubes'
 
 const scene = new ReactiveCubes()
-
 const engine = new Engine(scene)
 
-engine.start()
+engine.start().catch(e => console.error(e))
+
