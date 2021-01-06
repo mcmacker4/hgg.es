@@ -33,13 +33,18 @@ export class ReactiveCubes extends Scene {
 
     private canvasSize: vec2 = vec2.fromValues(0, 0)
 
-    private readonly cubeCount = 10000
-    private readonly space = 8
-    private readonly depth = 10
-    private readonly sensitivity = 0.2
-    private readonly normalSpeed = 2.5
+    private readonly cubeCount: number
+    private readonly space: number = 8
+    private readonly depth: number = 10
+    private readonly sensitivity: number = 0.2
+    private readonly normalSpeed: number = 2.5
 
-    private readonly cubeScale = 0.3
+    private readonly cubeScale: number = 0.3
+
+    constructor(cubeCount: number = 400) {
+        super()
+        this.cubeCount = cubeCount
+    }
 
     async onInit(gl: WebGLContext) {
         this.program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc)
@@ -142,6 +147,12 @@ export class ReactiveCubes extends Scene {
 
         this.cubeModel!.unbind(gl)
         gl.useProgram(null)
+    }
+
+    onCleanup(gl: WebGLContext) {
+        gl.deleteProgram(this.program!)
+        this.cubeModel?.delete(gl)
+        this.matricesVBOs.forEach(vbo => vbo.delete(gl))
     }
 
     onResize(gl: WebGLContext, width: number, height: number): void {

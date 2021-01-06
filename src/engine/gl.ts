@@ -25,6 +25,10 @@ export class VBO {
         gl.bindBuffer(target, null)
     }
 
+    delete(gl: WebGLContext) {
+        gl.deleteBuffer(this.id)
+    }
+
 }
 
 export class VAO {
@@ -64,6 +68,10 @@ export class VAO {
 
     unbind(gl: WebGLContext) {
         gl.bindVertexArray(null)
+    }
+
+    delete(gl: WebGLContext) {
+        gl.deleteVertexArray(this.id)
     }
 
 }

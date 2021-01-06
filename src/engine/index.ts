@@ -58,17 +58,25 @@ export class Engine {
         this.scene.onUpdate(delta)
         this.lastUpdate = now
 
-        this.frameCount += 1
-        if (now > this.lastFps + 1000) {
-            this.lastFps = now
-            console.log(`FPS: ${this.frameCount}`)
-            this.frameCount = 0
+        //@ts-ignore
+        if (process.env.NODE_ENV === 'development') {
+            this.frameCount += 1
+            if (now > this.lastFps + 1000) {
+                this.lastFps = now
+                console.log(`FPS: ${this.frameCount}`)
+                this.frameCount = 0
+            }
         }
     }
 
     private render() {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
         this.scene.onRender(this.gl)
+    }
+
+    stop() {
+        this.running = false
+        this.scene.onCleanup(this.gl)
     }
 
     // Event Methods

@@ -171,6 +171,8 @@ export class PassingCubes extends Scene {
 
     }
 
+    onCleanup(_gl: WebGLContext) {}
+
     onResize(_: WebGLContext, width: number, height: number) {
         mat4.perspective(this.projectionMatrix!, 50.0 * (Math.PI / 180), width / height, 0.1, 1000)
     }
