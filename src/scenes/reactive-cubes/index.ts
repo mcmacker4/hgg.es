@@ -1,13 +1,15 @@
 import {mat4, quat, vec2, vec3} from "gl-matrix";
-import {createProgram, VAO} from "../../engine/gl";
+import {createProgram, VAO, VBO} from "../../engine/gl";
 import {Scene} from "../../engine/scene";
 
 import vertexShaderSrc from './shaders/main.vert'
 import fragmentShaderSrc from './shaders/main.frag'
 
 import {cubeVertices, cubeNormals} from '../../models/cube'
+import {WebGLContext} from "../../engine";
 
 interface Cube {
+    matrix: mat4
     position: vec3
     rotation: quat
     scale: vec3
@@ -21,38 +23,73 @@ export class ReactiveCubes extends Scene {
     private cubeModel: VAO | undefined
     private projectionMatrix: mat4 = mat4.create()
 
+    private matricesBuffers: Float32Array[] = []
+    private matricesVBOs: VBO[] = []
+
     private cubes: Cube[] = []
     private globalRotation: vec2 = vec2.fromValues(0, 0)
     private targetRotation: vec2 = vec2.fromValues(0, 0)
+    private worldMatrix = mat4.create()
 
     private canvasSize: vec2 = vec2.fromValues(0, 0)
 
-    private readonly space = 10
-    private readonly sensitivity = 0.2
-    private readonly normalSpeed = 1.5
+    private readonly cubeCount = 300
+    private readonly space = 8
+    private readonly sensitivity = 0.5
+    private readonly normalSpeed = 2.5
 
-    onInit(gl: WebGL2RenderingContext): void {
+    private readonly cubeScale = 0.3
+
+    onInit(gl: WebGLContext): void {
         this.program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc)
-        this.cubeModel = new VAO(gl, cubeVertices, cubeNormals)
 
         window.addEventListener("mousemove", (event: MouseEvent) => {
             vec2.set(this.targetRotation, (event.clientY / this.canvasSize[1] - 0.5) * this.sensitivity, (event.clientX / this.canvasSize[0] - 0.5) * this.sensitivity)
         })
 
-        this.cubes = [...Array(400)].map(() => {
+        const aspect = this.canvasSize[0] / this.canvasSize[1]
+
+        this.cubes = [...Array(this.cubeCount)].map(() => {
+            const position = vec3.fromValues(rand(-this.space, this.space), rand(-this.space, this.space), rand(-10, 0))
+            const rotation = quat.random(quat.create())
+            const scale = vec3.fromValues(this.cubeScale, this.cubeScale, this.cubeScale)
             return {
-                position: vec3.fromValues(rand(-this.space, this.space), rand(-this.space, this.space), rand(-10, 0)),
-                rotation: quat.random(quat.create()),
-                scale: vec3.fromValues(0.3, 0.3, 0.3)
+                position,
+                rotation,
+                scale,
+                matrix: mat4.fromRotationTranslationScale(
+                    mat4.create(),
+                    rotation,
+                    scale,
+                    vec3.fromValues(position[0] * aspect, position[1], position[2])
+                )
             }
         })
+
+        for (let i = 0; i < 4; i++) {
+            this.matricesBuffers[i] = new Float32Array(this.cubeCount * 4)
+            this.matricesVBOs![i] = new VBO(gl, gl.ARRAY_BUFFER, null, gl.DYNAMIC_DRAW)
+        }
+        this.loadModelMatrices(gl)
+
+        this.cubeModel = new VAO(gl, cubeVertices, cubeNormals)
+        this.cubeModel.bind(gl)
+        // Set up instanced array of matrices
+        for (let i = 0; i < 4; i++) {
+            this.matricesVBOs![i].bind(gl, gl.ARRAY_BUFFER)
+            gl.vertexAttribPointer(2 + i, 4, gl.FLOAT, false, 0, 0)
+            gl.enableVertexAttribArray(2 + i)
+            this.matricesVBOs![i].unbind(gl, gl.ARRAY_BUFFER)
+            gl.vertexAttribDivisor(2 + i, 1)
+        }
+        this.cubeModel.unbind(gl)
 
         const pos1 = Math.floor(Math.random() * 3)
         const pos2 = [0, 1, 2].filter(p => p !== pos1)[Math.floor(Math.random() * 2)]
 
         const bright = 30
-        
-        const lights: { position: vec3, color: vec3 }[] = [
+
+        const lights: {position: vec3, color: vec3}[] = [
             {
                 position: vec3.fromValues(-4, -4, 10),
                 color: [0, 0, 0].map((_, i) => i === pos1 ? 2 : 1).map(n => n * bright) as vec3
@@ -64,7 +101,7 @@ export class ReactiveCubes extends Scene {
                 //color: vec3.fromValues(30, 60, 60)
             }
         ]
-        
+
         gl.useProgram(this.program)
         const countLoc = gl.getUniformLocation(this.program, 'lightCount')
         gl.uniform1i(countLoc, lights.length)
@@ -84,47 +121,65 @@ export class ReactiveCubes extends Scene {
         const speed = vec2.scale(vec2.create(), distance, this.normalSpeed)
         vec2.scale(speed, speed, delta)
         vec2.add(this.globalRotation, this.globalRotation, speed)
+
+        mat4.identity(this.worldMatrix)
+        mat4.rotateX(this.worldMatrix, this.worldMatrix, this.globalRotation[0])
+        mat4.rotateY(this.worldMatrix, this.worldMatrix, this.globalRotation[1])
     }
 
-    onRender(gl: WebGL2RenderingContext): void {
+    onRender(gl: WebGLContext): void {
         gl.useProgram(this.program!)
         this.cubeModel!.bind(gl)
 
         const projMatLoc = gl.getUniformLocation(this.program!, "projectionMatrix")
         gl.uniformMatrix4fv(projMatLoc, false, this.projectionMatrix)
 
-        const modelMat = mat4.create()
-        const modelMatLoc = gl.getUniformLocation(this.program!, "modelMatrix")
+        const worldMatLoc = gl.getUniformLocation(this.program!, "worldMatrix")
+        gl.uniformMatrix4fv(worldMatLoc, false, this.worldMatrix)
 
-        const interMat = mat4.create()
-        const position = vec3.create()
-
-        this.cubes?.forEach(cube => {
-            vec3.copy(position, cube.position)
-            position[0] *= this.canvasSize[0] / this.canvasSize[1]
-
-            mat4.identity(modelMat)
-            mat4.rotateX(modelMat, modelMat, this.globalRotation[0])
-            mat4.rotateY(modelMat, modelMat, this.globalRotation[1])
-            mat4.translate(modelMat, modelMat, position)
-            mat4.mul(modelMat, modelMat, mat4.fromQuat(interMat, cube.rotation))
-            mat4.scale(modelMat, modelMat, cube.scale)
-
-            gl.uniformMatrix4fv(modelMatLoc, false, modelMat)
-
-            gl.drawArrays(gl.TRIANGLES, 0, this.cubeModel!.vertexCount)
-        })
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, this.cubeModel!.vertexCount, this.cubeCount)
 
         this.cubeModel!.unbind(gl)
         gl.useProgram(null)
     }
 
-    onResize(width: number, height: number): void {
+    onResize(gl: WebGLContext, width: number, height: number): void {
+        const aspect = width / height
+
         vec2.set(this.canvasSize, width, height)
 
-        mat4.perspective(this.projectionMatrix, 80.0 / 180 * Math.PI, width / height, 0.1, 1000)
+        mat4.perspective(this.projectionMatrix, 80.0 / 180 * Math.PI, aspect, 0.1, 1000)
         mat4.translate(this.projectionMatrix, this.projectionMatrix, vec3.fromValues(0, 0, -5))
+
+        this.cubes.forEach(cube => {
+            mat4.fromRotationTranslationScale(
+                cube.matrix,
+                cube.rotation,
+                vec3.fromValues(cube.position[0] * aspect, cube.position[1], cube.position[2]),
+                cube.scale
+            )
+        })
+
+        this.loadModelMatrices(gl)
+    }
+
+    private loadModelMatrices(gl: WebGLContext) {
+        this.copyCubeMatrices()
+        for (let i = 0; i < 4; i++) {
+            this.matricesVBOs[i]!.bind(gl, gl.ARRAY_BUFFER)
+            gl.bufferData(gl.ARRAY_BUFFER, this.matricesBuffers[i]!, gl.DYNAMIC_DRAW)
+            this.matricesVBOs[i]!.unbind(gl, gl.ARRAY_BUFFER)
+        }
+    }
+
+    private copyCubeMatrices() {
+        for (let cube = 0; cube < this.cubes.length; cube++) {
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
+                    this.matricesBuffers[row][cube * 4 + col] = this.cubes[cube].matrix[row * 4 + col]
+                }
+            }
+        }
     }
 
 }
-

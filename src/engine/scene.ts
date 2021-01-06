@@ -6,5 +6,5 @@ export abstract class Scene {
     abstract onUpdate(delta: number): void
     abstract onRender(gl: WebGLContext): void
 
-    abstract onResize(width: number, height: number): void
+    abstract onResize(gl: WebGLContext, width: number, height: number): void
 }

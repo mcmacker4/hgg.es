@@ -12,6 +12,8 @@ export class Engine {
     private scene: Scene
 
     private lastUpdate: number = Date.now()
+    private lastFps: number = Date.now()
+    private frameCount: number = 0
 
     constructor(scene: Scene) {
         this.canvas = document.getElementById('background') as HTMLCanvasElement
@@ -56,6 +58,13 @@ export class Engine {
         const delta = (now - this.lastUpdate) / 1000
         this.scene.onUpdate(delta)
         this.lastUpdate = now
+
+        this.frameCount += 1
+        if (now > this.lastFps + 1000) {
+            this.lastFps = now
+            console.log(`FPS: ${this.frameCount}`)
+            this.frameCount = 0
+        }
     }
 
     private render() {
@@ -70,7 +79,7 @@ export class Engine {
         this.canvas.width = width
         this.canvas.height = height
         this.gl.viewport(0, 0, width, height)
-        this.scene.onResize(width, height)
+        this.scene.onResize(this.gl, width, height)
     }
 
 }

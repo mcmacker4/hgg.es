@@ -4,15 +4,17 @@ export class VBO {
 
     private id: WebGLBuffer
 
-    constructor(gl: WebGLContext, target: number, data: Float32Array | Int32Array) {
+    constructor(gl: WebGLContext, target: number, data: Float32Array | Int32Array | null, usage: number = gl.STATIC_DRAW) {
         const id = gl.createBuffer()
         if (id === null) throw new Error("Could not create Buffer.")
 
         this.id = id
 
-        this.bind(gl, target)
-        gl.bufferData(target, data, gl.STATIC_DRAW)
-        this.unbind(gl, target)
+        if (data !== null) {
+            this.bind(gl, target)
+            gl.bufferData(target, data, usage)
+            this.unbind(gl, target)
+        }
     }
 
     bind(gl: WebGLContext, target: number) {
