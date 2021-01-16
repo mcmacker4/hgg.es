@@ -23,11 +23,11 @@ void main() {
         vec3 lightPos = lightPositions[i];
         vec3 lightColor = lightColors[i];
 
-        vec3 lightDir = normalize(lightPos - _position);
+        vec3 toLight = lightPos - _position;
+        float lightDist = length(toLight);
+        vec3 lightDir = toLight / lightDist;
         
-        float lightDist = length(lightPos - _position);
-        
-        float bright = dot(lightDir, normal) / (lightDist * lightDist);
+        float bright = max(0.0, dot(lightDir, normal)) / (lightDist * lightDist);
 
         result += bright * lightColor;
 

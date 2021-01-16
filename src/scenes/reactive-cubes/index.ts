@@ -33,18 +33,14 @@ export class ReactiveCubes extends Scene {
 
     private canvasSize: vec2 = vec2.fromValues(0, 0)
 
-    private readonly cubeCount: number
-    private readonly space: number = 8
-    private readonly depth: number = 10
+    private readonly cubeCount: number = 600
+    private readonly cubeScale: number = 0.3
+    private readonly space: number = 7
+    private readonly depth: number = 15
     private readonly sensitivity: number = 0.2
     private readonly normalSpeed: number = 2.5
 
-    private readonly cubeScale: number = 0.3
-
-    constructor(cubeCount: number = 400) {
-        super()
-        this.cubeCount = cubeCount
-    }
+    private readonly fov = 60
 
     async onInit(gl: WebGLContext) {
         this.program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc)
@@ -160,7 +156,7 @@ export class ReactiveCubes extends Scene {
 
         vec2.set(this.canvasSize, width, height)
 
-        mat4.perspective(this.projectionMatrix, 80.0 / 180 * Math.PI, aspect, 0.1, 1000)
+        mat4.perspective(this.projectionMatrix, this.fov / 180 * Math.PI, aspect, 0.1, 1000)
         mat4.translate(this.projectionMatrix, this.projectionMatrix, vec3.fromValues(0, 0, -5))
 
         this.cubes.forEach(cube => {

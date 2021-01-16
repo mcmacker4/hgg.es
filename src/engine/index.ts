@@ -19,7 +19,14 @@ export class Engine {
         this.canvas = document.getElementById('background') as HTMLCanvasElement
 
         const gl = this.canvas.getContext('webgl2')
-        if (gl === null) throw new Error("Could not create WebGL2 Rendering Context.")
+
+        if (gl === null) {
+            throw new Error("Could not create WebGL2 Rendering Context.")
+        }
+
+        console.log(gl.getParameter(gl.VENDOR))
+        console.log(gl.getParameter(gl.VERSION))
+        console.log(gl.getParameter(gl.SHADING_LANGUAGE_VERSION))
 
         this.gl = gl
 
