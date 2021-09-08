@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  portfolio:
+    image: registry.gitlab.com/mcmacker4/portfolio/portfolio
+    build: .
+    networks:
+      - balancernet
+
+networks:
+  balancernet:
+    external: true
