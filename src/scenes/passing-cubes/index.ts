@@ -1,8 +1,8 @@
 import { WebGLContext } from "../../engine";
 import { vec3, quat, mat4 } from 'gl-matrix'
 
-import vertexShaderSrc from './shaders/main.vert'
-import fragmentShaderSrc from './shaders/main.frag'
+import vertexShaderSrc from '/shaders/passing-cubes/main.vert.glsl'
+import fragmentShaderSrc from '/shaders/passing-cubes/main.frag.glsl'
 import {createProgram, VAO} from "../../engine/gl";
 import {Scene} from "../../engine/scene";
 
@@ -39,7 +39,7 @@ class Entity {
 class Cube extends Entity {
 
     readonly speed: vec3
-    private posDelta: vec3
+    private readonly posDelta: vec3
 
     constructor(model: VAO, speed: vec3) {
         super(model)

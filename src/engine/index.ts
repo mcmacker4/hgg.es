@@ -5,7 +5,7 @@ export type WebGLContext = WebGL2RenderingContext
 export class Engine {
 
     private canvas: HTMLCanvasElement
-    private gl: WebGLContext
+    private readonly gl: WebGLContext
 
     private running: boolean = false
 
@@ -39,7 +39,7 @@ export class Engine {
 
     async start() {
         this.running = true
-        this.initialize()
+        await this.initialize()
         this.nextFrame()
     }
 

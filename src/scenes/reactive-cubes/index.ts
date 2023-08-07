@@ -2,8 +2,8 @@ import {mat4, quat, vec2, vec3} from "gl-matrix";
 import {createProgram, VAO, VBO} from "../../engine/gl";
 import {Scene} from "../../engine/scene";
 
-import vertexShaderSrc from './shaders/main.vert'
-import fragmentShaderSrc from './shaders/main.frag'
+import vertexShaderURL from '/shaders/reactive-cubes/main.vert.glsl'
+import fragmentShaderURL from '/shaders/reactive-cubes/main.frag.glsl'
 
 import {cubeVertices, cubeNormals} from '../../models/cube'
 import {WebGLContext} from "../../engine";
@@ -16,6 +16,10 @@ interface Cube {
 }
 
 const rand = (from: number, to: number) => Math.random() * (to - from) + from
+
+function fetchShaderSource(url: string) {
+    return fetch(url).then(res => res.text())
+}
 
 export class ReactiveCubes extends Scene {
 
@@ -43,7 +47,13 @@ export class ReactiveCubes extends Scene {
     private readonly fov = 60
 
     async onInit(gl: WebGLContext) {
-        this.program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc)
+
+        const [vShaderSrc, fShaderSrc] = await Promise.all([
+            fetchShaderSource(vertexShaderURL),
+            fetchShaderSource(fragmentShaderURL)
+        ]);
+
+        this.program = await createProgram(gl, vShaderSrc, fShaderSrc)
 
         window.addEventListener("mousemove", (event: MouseEvent) => {
             vec2.set(this.targetRotation, (event.clientY / this.canvasSize[1] - 0.5) * this.sensitivity, (event.clientX / this.canvasSize[0] - 0.5) * this.sensitivity)
