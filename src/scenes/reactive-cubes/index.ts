@@ -2,8 +2,8 @@ import {mat4, quat, vec2, vec3} from "gl-matrix";
 import {createProgram, VAO, VBO} from "../../engine/gl";
 import {Scene} from "../../engine/scene";
 
-import vertexShaderURL from '/shaders/reactive-cubes/main.vert.glsl'
-import fragmentShaderURL from '/shaders/reactive-cubes/main.frag.glsl'
+import vertexShaderSrc from './shaders/main.vert.glsl?raw'
+import fragmentShaderSrc from './shaders/main.frag.glsl?raw'
 
 import {cubeVertices, cubeNormals} from '../../models/cube'
 import {WebGLContext} from "../../engine";
@@ -16,10 +16,6 @@ interface Cube {
 }
 
 const rand = (from: number, to: number) => Math.random() * (to - from) + from
-
-function fetchShaderSource(url: string) {
-    return fetch(url).then(res => res.text())
-}
 
 export class ReactiveCubes extends Scene {
 
@@ -48,12 +44,7 @@ export class ReactiveCubes extends Scene {
 
     async onInit(gl: WebGLContext) {
 
-        const [vShaderSrc, fShaderSrc] = await Promise.all([
-            fetchShaderSource(vertexShaderURL),
-            fetchShaderSource(fragmentShaderURL)
-        ]);
-
-        this.program = await createProgram(gl, vShaderSrc, fShaderSrc)
+        this.program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc)
 
         window.addEventListener("mousemove", (event: MouseEvent) => {
             vec2.set(this.targetRotation, (event.clientY / this.canvasSize[1] - 0.5) * this.sensitivity, (event.clientX / this.canvasSize[0] - 0.5) * this.sensitivity)
@@ -80,7 +71,7 @@ export class ReactiveCubes extends Scene {
 
         for (let i = 0; i < 4; i++) {
             this.matricesBuffers[i] = new Float32Array(this.cubeCount * 4)
-            this.matricesVBOs![i] = new VBO(gl, gl.ARRAY_BUFFER, null, gl.DYNAMIC_DRAW)
+            this.matricesVBOs[i] = new VBO(gl, gl.ARRAY_BUFFER, null, gl.DYNAMIC_DRAW)
         }
         this.loadModelMatrices(gl)
 
@@ -88,10 +79,10 @@ export class ReactiveCubes extends Scene {
         this.cubeModel.bind(gl)
         // Set up instanced array of matrices
         for (let i = 0; i < 4; i++) {
-            this.matricesVBOs![i].bind(gl, gl.ARRAY_BUFFER)
+            this.matricesVBOs[i].bind(gl, gl.ARRAY_BUFFER)
             gl.vertexAttribPointer(2 + i, 4, gl.FLOAT, false, 0, 0)
             gl.enableVertexAttribArray(2 + i)
-            this.matricesVBOs![i].unbind(gl, gl.ARRAY_BUFFER)
+            this.matricesVBOs[i].unbind(gl, gl.ARRAY_BUFFER)
             gl.vertexAttribDivisor(2 + i, 1)
         }
         this.cubeModel.unbind(gl)

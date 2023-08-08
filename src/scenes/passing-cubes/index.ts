@@ -1,13 +1,12 @@
 import { WebGLContext } from "../../engine";
 import { vec3, quat, mat4 } from 'gl-matrix'
 
-import vertexShaderSrc from '/shaders/passing-cubes/main.vert.glsl'
-import fragmentShaderSrc from '/shaders/passing-cubes/main.frag.glsl'
+import vertexShaderSrc from './shaders/main.vert.glsl?raw'
+import fragmentShaderSrc from './shaders/main.frag.glsl?raw'
 import {createProgram, VAO} from "../../engine/gl";
 import {Scene} from "../../engine/scene";
 
 import {cubeVertices, cubeNormals} from '../../models/cube'
-
 
 class Entity {
 
