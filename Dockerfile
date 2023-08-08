@@ -2,7 +2,6 @@ FROM node:lts-alpine AS build
 
 COPY package.json tsconfig.json yarn.lock vite.config.ts index.html /build/
 COPY src /build/src
-COPY public /build/public
 
 WORKDIR /build
 
