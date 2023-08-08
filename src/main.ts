@@ -1,5 +1,3 @@
-import './style.scss'
-
 import {Engine} from './engine'
 import {ReactiveCubes} from './scenes/reactive-cubes'
 
