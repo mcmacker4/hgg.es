@@ -44,19 +44,19 @@ html, body, #content {
             font-size: 14pt;
             height: 2em;
             line-height: 2em;
-    
+
             margin: 0 0.75em;
 
             color: white;
             text-decoration: none;
-    
+
             transition: color 0.2s;
-            
+
             &:hover {
                 color: #b8b3ff;
             }
         }
-        
+
     }
 
 }
@@ -65,12 +65,12 @@ html, body, #content {
 
     height: 100%;
     text-align: center;
-    
+
     display: flex;
     flex-direction: column;
     justify-content: center;
 
-    .main {
+    #main {
 
         .title {
             font-size: 28pt;
@@ -81,6 +81,13 @@ html, body, #content {
         .subtitle {
             font-size: 18pt;
             font-weight: 300;
+        }
+
+        .error {
+            font-size: 14pt;
+            font-weight: 300;
+            padding-top: 1em;
+            color: #ffb0aa;
         }
 
     }

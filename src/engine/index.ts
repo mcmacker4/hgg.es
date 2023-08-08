@@ -21,6 +21,10 @@ export class Engine {
         const gl = this.canvas.getContext('webgl2')
 
         if (gl === null) {
+            const errorNode = document.createElement('p')
+            errorNode.className = "error"
+            errorNode.innerText = "You're missing out! Looks like your browser does not support WebGL 2.0"
+            document.getElementById('main')!.appendChild(errorNode)
             throw new Error("Could not create WebGL2 Rendering Context.")
         }
 
