@@ -1,8 +1,8 @@
 FROM node:lts-alpine AS build
 
-COPY .babelrc package.json tsconfig.json yarn.lock /build/
+COPY package.json tsconfig.json yarn.lock vite.config.ts index.html /build/
 COPY src /build/src
-COPY webpack /build/webpack
+COPY public /build/public
 
 WORKDIR /build
 
