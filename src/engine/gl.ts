@@ -2,7 +2,7 @@ import {WebGLContext} from "."
 
 export class VBO {
 
-    private id: WebGLBuffer
+    private readonly id: WebGLBuffer
 
     constructor(gl: WebGLContext, target: number, data: Float32Array | Int32Array | null, usage: number = gl.STATIC_DRAW) {
         const id = gl.createBuffer()
@@ -33,7 +33,7 @@ export class VBO {
 
 export class VAO {
 
-    private id: WebGLVertexArrayObject
+    private readonly id: WebGLVertexArrayObject
     readonly vertexCount: number
 
     constructor(gl: WebGLContext, vertices: Float32Array, normals: Float32Array) {

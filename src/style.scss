@@ -72,6 +72,10 @@ html, body, #content {
 
     #main {
 
+        padding: 3em 0;
+        backdrop-filter: blur(10px);
+        background-color: hsla(0, 0, 0, 0.3);
+
         .title {
             font-size: 28pt;
             font-weight: 700;

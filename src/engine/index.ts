@@ -36,7 +36,7 @@ export class Engine {
 
         this.scene = scene
 
-        window.addEventListener('resize', () => this.onCanvasRezie())
+        window.addEventListener('resize', () => this.onCanvasResize())
     }
 
     // Lifecycle Methods
@@ -52,7 +52,7 @@ export class Engine {
         this.gl.enable(this.gl.DEPTH_TEST)
         this.gl.enable(this.gl.CULL_FACE)
         await this.scene.onInit(this.gl)
-        this.onCanvasRezie()
+        this.onCanvasResize()
     }
 
     private nextFrame() {
@@ -92,7 +92,7 @@ export class Engine {
 
     // Event Methods
 
-    private onCanvasRezie() {
+    private onCanvasResize() {
         const { innerWidth: width, innerHeight: height } = window
         this.canvas.width = width
         this.canvas.height = height

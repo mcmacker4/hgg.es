@@ -12,6 +12,7 @@ interface Cube {
     matrix: mat4
     position: vec3
     rotation: quat
+    rotationAngle: quat
     scale: vec3
 }
 
@@ -33,7 +34,7 @@ export class ReactiveCubes extends Scene {
 
     private canvasSize: vec2 = vec2.fromValues(0, 0)
 
-    private readonly cubeCount: number = 600
+    private readonly cubeCount: number = 600 / window.devicePixelRatio
     private readonly cubeScale: number = 0.3
     private readonly space: number = 7
     private readonly depth: number = 15
@@ -55,16 +56,18 @@ export class ReactiveCubes extends Scene {
         this.cubes = [...Array(this.cubeCount)].map(() => {
             const position = vec3.fromValues(rand(-this.space, this.space), rand(-this.space, this.space), rand(-this.depth, 0))
             const rotation = quat.random(quat.create())
+            const rotationAngle = quat.random(quat.create())
             const scale = vec3.fromValues(this.cubeScale, this.cubeScale, this.cubeScale)
             return {
                 position,
                 rotation,
+                rotationAngle,
                 scale,
                 matrix: mat4.fromRotationTranslationScale(
                     mat4.create(),
                     rotation,
+                    vec3.fromValues(position[0] * aspect, position[1], position[2]),
                     scale,
-                    vec3.fromValues(position[0] * aspect, position[1], position[2])
                 )
             }
         })
@@ -131,6 +134,8 @@ export class ReactiveCubes extends Scene {
     }
 
     onRender(gl: WebGLContext): void {
+        this.loadModelMatrices(gl)
+
         gl.useProgram(this.program!)
         this.cubeModel!.bind(gl)
 
@@ -160,6 +165,12 @@ export class ReactiveCubes extends Scene {
         mat4.perspective(this.projectionMatrix, this.fov / 180 * Math.PI, aspect, 0.1, 1000)
         mat4.translate(this.projectionMatrix, this.projectionMatrix, vec3.fromValues(0, 0, -5))
 
+        this.updateCubeMatrices();
+        this.loadModelMatrices(gl)
+    }
+
+    private updateCubeMatrices() {
+        const aspect = this.canvasSize[0] / this.canvasSize[1]
         this.cubes.forEach(cube => {
             mat4.fromRotationTranslationScale(
                 cube.matrix,
@@ -168,8 +179,6 @@ export class ReactiveCubes extends Scene {
                 cube.scale
             )
         })
-
-        this.loadModelMatrices(gl)
     }
 
     private loadModelMatrices(gl: WebGLContext) {
